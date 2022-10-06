@@ -69,6 +69,7 @@ var checkAuth = async (req, res, next) => {
 }
 
 // base routes for modules
+app.use('/health', (req, res) => { res.status(200).send("Success") });
 app.use('/', checkAuth);
 app.use('/users', usersRouter);
 app.use('/game', gameRouter);
