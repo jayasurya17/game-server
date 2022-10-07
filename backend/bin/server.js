@@ -43,8 +43,8 @@ app.use((req, res, next) => {
 
 
 const admin = require('firebase-admin')
-var serviceAccount = config.firebase;
 
+const serviceAccount = config.firebase;
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount)
 });

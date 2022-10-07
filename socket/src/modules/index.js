@@ -4,8 +4,9 @@ import PlayerListeners from './playerListeners'
 import ConnectionListeners from './connectionListeners'
 import GameAdminListeners from './gameAdminListeners'
 import { sysidConnected, userid_useruid, useruid_sysid, useruid_userid } from '../../utils/trackConnections'
-var serviceAccount = require("../../serviceAccountKey.json");
+import config from '../../config/index';
 
+const serviceAccount = config.firebase;
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
