@@ -6,8 +6,7 @@ import GameMember from '../../../models/mongoDB/gameMember';
 import Messages from '../../../models/mongoDB/messages';
 import constants from '../../../utils/constants';
 import config from '../../../../config';
-console.log(process.env)
-console.log(config)
+
 let transporter = nodemailer.createTransport({
 	host: 'smtp.gmail.com',
 	port: 465,
