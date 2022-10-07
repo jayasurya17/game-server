@@ -8,6 +8,7 @@ function GameRoomNotifications({ commonData }) {
   let params = useParams()
   let GameCode = params.gameId;
   const [leaveGameModalOpened, setLeaveGameModalOpened] = useState(false);
+  const emoji = ['🔥', '🤣', '😈', '😢', '🖕'];
 
   let userActionTitle = ""
   let userActionColor = ""
@@ -15,13 +16,13 @@ function GameRoomNotifications({ commonData }) {
     userActionTitle = commonData.lastPlayedUser
     userActionColor = "teal.1"
   } else if (commonData.playerDeclaredType == "PAIR") {
-    userActionTitle = commonData.lastPlayedUser + " had wicked wango cards"
+    userActionTitle = `${commonData.lastPlayedUser}had WICKED WANGO cards"`
     userActionColor = "lime.1"
   } else if (commonData.playerDeclaredType == "SAME") {
-    userActionTitle = "GG " + commonData.lastPlayedUser
+    userActionTitle = `GG! ${commonData.lastPlayedUser}`
     userActionColor = "yellow.1"
   } else if (commonData.playerDeclaredType == "NOT_LOWEST") {
-    userActionTitle = commonData.lastPlayedUser + " got banboozled"
+    userActionTitle = `${commonData.lastPlayedUser} just got BAMBOOZELED`
     userActionColor = "red.1"
   } else {
     userActionTitle = commonData.lastPlayedUser
@@ -36,23 +37,8 @@ function GameRoomNotifications({ commonData }) {
             <ActionIcon style={{ padding: '4px' }} color={'yellow.7'} variant='filled' size={'lg'}>
               <IconMoodSmile size={34}></IconMoodSmile></ActionIcon>
           </Menu.Target>
-
           <Menu.Dropdown>
-            <Menu.Item component="a" onClick={() => Reactions(GameCode, '😁')} >
-              😁
-            </Menu.Item>
-            <Menu.Item component="a" onClick={() => Reactions(GameCode, '🔥')}>
-              🔥
-            </Menu.Item>
-            <Menu.Item component="a" onClick={() => Reactions(GameCode, '🤣')}>
-              🤣
-            </Menu.Item>
-            <Menu.Item component="a" onClick={() => Reactions(GameCode, '👿')}>
-              👿
-            </Menu.Item>
-            <Menu.Item component="a" onClick={() => Reactions(GameCode, '😢')}>
-              😢
-            </Menu.Item>
+            {emoji.map((element) => <Menu.Item component='a' onClick={() => Reactions(GameCode, element)}>{element}</Menu.Item>)}
 
           </Menu.Dropdown>
         </Menu>
@@ -88,7 +74,7 @@ function LeaveGameModal({ leaveGameModalOpened, setLeaveGameModalOpened }) {
       opened={leaveGameModalOpened}
       onClose={() => setLeaveGameModalOpened(false)}
     >
-      <Center><Title>Are you sure?</Title></Center>
+      <Center><Title order={2}>Are you sure you want to quit the game?</Title></Center>
       <Space h="xl" />
       <Group position="apart" p={6}>
         <Button onClick={() => setLeaveGameModalOpened(false)} color={'gray.7'}>Cancel</Button>
