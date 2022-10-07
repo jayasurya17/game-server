@@ -2,7 +2,7 @@
 
 module.exports = {
 	session: process.env.SESSION,
-	token: process.env.TOKEN ,
+	token: process.env.TOKEN,
 	database: {
 		mongoDbUrl: process.env.MONGODB_URL,
 		name: process.env.DATABASE,
@@ -10,6 +10,13 @@ module.exports = {
 		password: process.env.DB_PASSWORD,
 		host: process.env.DB_HOST,
 		port: process.env.DB_DBPORT,
-		dialect: process.env.DB_DIALECT
-	}
+		dialect: process.env.DB_DIALECT,
+	},
+	nodemailer: {
+		EMAIL_ID: process.env.EMAIL_ID,
+		APP_PASSWORD: process.env.APP_PASSWORD
+	},
+	adminPortalAccess: process.env.ADMIN_PORTAL_ACCESS,
+	adminEmail: process.env.ADMIN_EMAIL,
+	frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000", // For now no use of frontend urls in backend, when security is tighetened, add expected urls to cors.
 }
