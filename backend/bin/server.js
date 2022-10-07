@@ -11,17 +11,10 @@ const bodyParser = require('body-parser');
 // router for modules
 const usersRouter = require('../src/modules/user/router/users');
 const gameRouter = require('../src/modules/game/router/game');
-const playerRouter = require('../src/modules/player/router/player');
-const tournamentRouter = require('../src/modules/tournament/router/game');
+const adminRouter = require('../src/modules/admin/router/admin');
 
 // database connections
 require('../src/models/mongoDB/index');
-
-// cron job
-require('../src/utils/endUnwantedGames')
-
-// Update User module
-require('../src/utils/updateUserModule')
 
 const app = express();
 const { port } = config;
@@ -48,16 +41,44 @@ app.use((req, res, next) => {
 	next();
 });
 
+
+const admin = require('firebase-admin')
+var serviceAccount = require("../serviceAccountKey.json");
+
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount)
+});
+
+
+
+var checkAuth = async (req, res, next) => {
+	try {
+		let authHeader = req.headers.authorization
+		let authToken = authHeader.substring(7, authHeader.length)
+		let decodedToken = await admin.auth().verifyIdToken(authToken)
+		const uid = decodedToken.uid;
+		let userRecord = await admin.auth().getUser(uid)
+		let newUserName = userRecord.displayName.replace(/\W/g, '')
+		req.body.userUID = uid
+		req.body.email = userRecord.email
+		req.body.userName = newUserName.toLowerCase()
+		next()
+	} catch (err) {
+		res.status(403).send('Unauthorized')
+	}
+}
+
 // base routes for modules
+app.use('/health', (req, res) => { res.status(200).send("Success") });
+app.use('/', checkAuth);
 app.use('/users', usersRouter);
 app.use('/game', gameRouter);
-app.use('/player', playerRouter);
-app.use('/tournament', tournamentRouter);
+app.use('/admin', adminRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
 	next(createError(404));
-	
+
 });
 
 // error handler

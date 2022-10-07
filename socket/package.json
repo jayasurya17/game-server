@@ -24,6 +24,7 @@
     "http-errors": "~1.6.3",
     "mongoose": "^6.5.2",
     "mongoose-type-email": "^1.0.12",
+    "node-cron": "^3.0.2",
     "node-fetch": "^2.6.0",
     "nodemon": "^2.0.4",
     "path": "^0.12.7",

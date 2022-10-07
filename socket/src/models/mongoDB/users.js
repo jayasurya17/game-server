@@ -1,7 +1,6 @@
 `use strict`
 
 import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
 
 const Users = new mongoose.Schema({
 	userUID: {
@@ -42,6 +41,5 @@ const Users = new mongoose.Schema({
 		default: 0
 	}
 }, { versionKey: false })
-
 
 export default mongoose.model('users', Users)

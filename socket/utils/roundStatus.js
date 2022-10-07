@@ -1,4 +1,4 @@
-import CalcuateScore from './calculateScore';
+import { calculateScore } from './calculateScore';
 
 var roundStatus = (allPlayers) => {
 
@@ -7,7 +7,7 @@ var roundStatus = (allPlayers) => {
         lowestPlayer = [],
         score
     for (var player of allPlayers) {
-        score = CalcuateScore(player.currentCards)
+        score = calculateScore(player.currentCards)
         if (score == lowestScore) {
             lowestPlayer.push(player.userId)
         } else if (score < lowestScore) {
@@ -15,7 +15,7 @@ var roundStatus = (allPlayers) => {
             lowestScore = score
         }
 
-        data[player.userId] = {
+        data[player.userId.toString()] = {
             userName: player.userName,
             isPair: (player.currentCards.length == 2 && (player.currentCards[0] - player.currentCards[1]) % 13 == 0),
             isLowest: false,
@@ -23,7 +23,7 @@ var roundStatus = (allPlayers) => {
         }
     }
 
-    
+
     for (var player of lowestPlayer) {
         data[player].isLowest = true
         if (lowestPlayer.length > 1) {

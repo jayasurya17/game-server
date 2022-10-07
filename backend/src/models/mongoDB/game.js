@@ -21,6 +21,11 @@ const Game = new mongoose.Schema({
         required: true,
         default: false
     },
+    canPlayersDeclare: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
     gameId: {
         type: String,
         required: true
@@ -53,9 +58,43 @@ const Game = new mongoose.Schema({
         required: true,
         default: 0
     },
-    createdAt : {
-        type : Date,
-        default : Date.now,
+    maxScore: {
+        type: Number,
+        required: true,
+        default: 100,
+        min: 100
+    },
+    endWithPair: {
+        type: Number,
+        required: true,
+        default: -25,
+        max: 0
+    },
+    wrongCall: {
+        type: Number,
+        required: true,
+        default: 50,
+        min: 0
+    },
+    canDeclareFirstRound: {
+        type: Boolean,
+        required: true,
+        default: true
+    },
+    autoplayTimer: {
+        type: Number,
+        required: true,
+        default: 60,
+        min: 45
+    },
+    isPublicGame: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 }, { versionKey: false })
 

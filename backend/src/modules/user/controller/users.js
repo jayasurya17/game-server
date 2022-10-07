@@ -1,47 +1,22 @@
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import Users from '../../../models/mongoDB/users';
+import Game from '../../../models/mongoDB/game';
 import GameMember from '../../../models/mongoDB/gameMember';
-import UpdatePassword from '../../../models/mongoDB/updatePassword';
+import Messages from '../../../models/mongoDB/messages';
 import constants from '../../../utils/constants';
-import S3 from '../../../utils/S3Operations';
 import config from '../../../../config';
-import UpdateHashPassword from '../../../utils/updateHashPassword';
 
-
-/**
- * Create user and save data in database.
- * @param  {Object} req request object
- * @param  {Object} res response object
- */
-exports.createUser = async (req, res) => {
-	let createdUser
-
-	let filter = {}
-	try {
-		filter.userName = req.body.userName
-		const user = await Users.findOne(filter)
-		if (user) {
-			return res
-				.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send(constants.MESSAGES.USER_ALREADY_EXISTS)
-		}
-
-		let userObj = req.body
-		let newUser = new Users(userObj)
-		createdUser = await newUser.save()
-		createdUser = createdUser.toJSON()
-		delete createdUser.password
-		return res
-			.status(constants.STATUS_CODE.CREATED_SUCCESSFULLY_STATUS)
-			.send(createdUser)
-	} catch (error) {
-		console.log(`Error while creating user ${error}`)
-		return res
-			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
-	}
-}
+let transporter = nodemailer.createTransport({
+	host: 'smtp.gmail.com',
+	port: 465,
+	secure: true,
+	// service: 'gmail',
+	auth: {
+		user: config.nodemailer.EMAIL_ID,
+		pass: config.nodemailer.APP_PASSWORD,
+	},
+});
 
 /**
  * Login user and send auth token and user details in response.
@@ -54,29 +29,28 @@ exports.loginUser = async (req, res) => {
 
 		var isAuth = false
 		user = await Users.findOne({
-			userName: req.body.userName,
-			isActive: true
+			userUID: req.body.userUID
 		})
 
-		if (user) {
-			const validate = await user.validatePassword(req.body.password)
-			if (validate) {
-				user = user.toJSON()
-				delete user.password
-				isAuth = true
-				return res.status(constants.STATUS_CODE.SUCCESS_STATUS).send(user)
+		if (!user) {
+			let userObj = {
+				userUID: req.body.userUID,
+				userName: req.body.userName,
+				email: req.body.email
 			}
-		}
-		if (!isAuth) {
-			return res
-				.status(constants.STATUS_CODE.UNAUTHORIZED_ERROR_STATUS)
-				.send(constants.MESSAGES.AUTHORIZATION_FAILED)
+			let newUser = new Users(userObj)
+			let createdUser = await newUser.save()
+			return res.status(constants.STATUS_CODE.CREATED_SUCCESSFULLY_STATUS).send(createdUser)
+		} else if (user.isActive) {
+			return res.status(constants.STATUS_CODE.SUCCESS_STATUS).send(user)
+		} else if (!user.isActive) {
+			return res.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS).send({ msg: "USER_INACTIVE" })
 		}
 	} catch (error) {
 		console.log(`Error while logging in user ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -88,11 +62,9 @@ exports.loginUser = async (req, res) => {
 exports.getUserProfile = async (req, res) => {
 	try {
 
-		if (req.params.userId == "null") {
-			return res.status(204).json()
-		}
-
-		let details = await Users.findById(req.params.userId)
+		let details = await Users.findOne({
+			userUID: req.body.userUID
+		})
 		if (details) {
 			details = details.toJSON()
 			delete details.password
@@ -104,7 +76,7 @@ exports.getUserProfile = async (req, res) => {
 		console.log(`Error while getting user profile details ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -116,57 +88,53 @@ exports.getUserProfile = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
 
 	try {
-		if (req.body.userName == undefined) {
-			return res
-				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send(constants.MESSAGES.USER_VALUES_MISSING)
-		}
 
 		const user = await Users.findOne({
-			_id: {
-				$ne: mongoose.Types.ObjectId(req.body.userId)
+			userUID: {
+				$ne: req.body.userUID
 			},
-			userName: req.body.userName
+			userName: req.body.newUserName
 		})
 		if (user) {
 			return res
 				.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send(constants.MESSAGES.USER_ALREADY_EXISTS)
+				.send({ msg: constants.MESSAGES.USER_ALREADY_EXISTS })
 		}
 
-		let userObj = req.body
+		let userObj = await Users.findOne({
+			userUID: req.body.userUID
+		})
 
-		// updating password
-		if (req.body.password) {
-			userObj.password = updatePassword(req.body.password)
-		} else {
-			delete userObj.password
+		if (!userObj) {
+			return res.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS).send({ msg: "USER_NOT_FOUND" })
 		}
 
-		let details = await Users.findByIdAndUpdate(
-			mongoose.Types.ObjectId(req.body.userId),
+		let details = await Users.findOneAndUpdate(
 			{
-				userName: req.body.userName
+				userUID: req.body.userUID
+			},
+			{
+				userName: req.body.newUserName
 			}
 		)
 		let gameMembers = await GameMember.find({
-			userId: req.body.userId
+			userId: userObj._id
 		})
 		for (var game of gameMembers) {
 			await GameMember.findByIdAndUpdate(
 				game._id,
 				{
-					userName: req.body.userName
+					userName: req.body.newUserName
 				}
 			)
 		}
-		return res.status(200).send(details.toJSON())
+		return res.status(200).send({ msg: "USER_UPDATED" })
 
 	} catch (error) {
 		console.log(`Error while updating user profile details ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -176,70 +144,41 @@ exports.updateUserProfile = async (req, res) => {
  * @param  {Object} req request object
  * @param  {Object} res response object
  */
-exports.reportBug = async (req, res) => {
+exports.sendMessage = async (req, res) => {
 
 	try {
-		let user = await Users.findById(req.body.userId)
+		let user = await Users.findOne({ userUID: req.body.userUID })
+
 		if (!user) {
 			return res
 				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send("Not a valid user")
+				.send({ msg: "Not a valid user" })
 		}
-
-		var attachments = []
-		for (var file of req.files) {
-			if (file.size > 20971520) {
-				return res
-				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send("Single file cannot be more than 20 MB")
-			}
-			// var url = await S3.fileupload(user.userName, file)
-			attachments.push({
-				filename: file.originalname,
-				// path: url
-				content: new Buffer(file.buffer)
-			})
-		}
-
-		let transporter = nodemailer.createTransport({
-			host: 'smtp.gmail.com',
-			port: 465,
-			secure: true,
-			// service: 'gmail',
-			auth: {
-				user: config.nodemailer.EMAIL_ID,
-				pass: config.nodemailer.PASSWORD,
-			},
-		});
 
 		transporter.sendMail({
 			from: config.nodemailer.EMAIL_ID,
-			to: "jayasurya1796@gmail.com",
-			subject: "A new bug report from declare game",
+			to: config.adminEmail,
+			subject: "A new message from declare game",
 			// text: "Hello world?", 
-			html: `<p><b>Email address: </b>${req.body.email}</p><p><b>Username: </b>${user.userName}</p><p>${req.body.description}</p>`,
-			attachments: attachments
+			html: `<p><b>Email address: </b>${req.body.email}</p><p>${req.body.description}</p>`
 		});
 
-		transporter.sendMail({
-			from: config.nodemailer.EMAIL_ID,
-			to: req.body.email,
-			subject: "We have received your bug report",
-			// text: "Hello world?", 
-			html: `<p>Thank you for reporting. We will work on it as soon as possible. 
-			The good thing about this game is that you can create as many accounts as you wish. 
-			So if your game is not responding, we're sorry about it but please logout and create a new 
-			account to play more games</p><p><b>Your description of the bug</b></p><p>${req.body.description}</p>`,
-			attachments: attachments
-		});
+		let messageObj = {
+			userUID: req.body.userUID,
+			email: req.body.email,
+			subject: "A message from user",
+			body: req.body.description
+		}
+		let newMessage = new Messages(messageObj)
+		await newMessage.save()
 
-		return res.status(200).send(null)
+		return res.status(constants.STATUS_CODE.SUCCESS_STATUS).send({})
 
 	} catch (error) {
 		console.log(`Error while reporting bug ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -258,12 +197,13 @@ exports.getStats = async (req, res) => {
 
 		if (!user) {
 			return res
-			.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-			.send("User does not exist")
+				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
+				.send({ msg: "User does not exist" })
 		}
 
 		const returnValue = {
-			gamesCount: user.totalGames,
+			userName: user.userName,
+			totalGames: user.totalGames,
 			totalWins: user.totalWins,
 			totalDeclares: user.totalDeclares,
 			totalFifties: user.totalFifties,
@@ -271,14 +211,14 @@ exports.getStats = async (req, res) => {
 		}
 
 		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send(returnValue)
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send(returnValue)
 
 	} catch (error) {
 		console.log(`Error while getting stats ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -290,8 +230,11 @@ exports.getStats = async (req, res) => {
 exports.leaderboard = async (req, res) => {
 	try {
 
-		let allUsers = await Users.find(),
-			user,
+		let allUsers = await Users.find({
+			isActive: true
+		}).sort('userName')
+
+		let user,
 			userId,
 			allUsersData = []
 
@@ -299,184 +242,27 @@ exports.leaderboard = async (req, res) => {
 		for (user of allUsers) {
 			userId = user._id
 
-			let ratio = 0
-            if (user.totalGames > 0) {
-                ratio = user.totalDeclares / user.totalGames
-			}
-			ratio = ratio.toFixed(2)
-			
 			allUsersData.push({
 				userId: userId,
 				userName: user.userName,
 				gamesCount: user.totalGames,
 				totalWins: user.totalWins,
 				totalDeclares: user.totalDeclares,
-				ratio: ratio,
 				totalFifties: user.totalFifties,
 				totalPairs: user.totalPairs,
+				requestedUser: req.body.userUID == user.userUID
 			})
 		}
 
 		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send(allUsersData)
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send(allUsersData)
 
 	} catch (error) {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
-	}
-}
-
-/**
- * Enable update user password.
- * @param  {Object} req request object
- * @param  {Object} res response object
- */
-exports.enableUpdatePassword = async (req, res) => {
-	try {
-
-		let data = new UpdatePassword({ userId : req.body.userId })
-		await data.save()
-
-		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send("Success")
-
-	} catch (error) {
-		console.log(`Error while getting getAllUsers ${error}`)
-		return res
-			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
-	}
-}
-
-/**
- * Diable update user password.
- * @param  {Object} req request object
- * @param  {Object} res response object
- */
-exports.disableUpdatePassword = async (req, res) => {
-	try {
-
-		await UpdatePassword.updateMany(
-			{
-				userId: req.body.userId
-			},
-			{
-				isActive: false
-			}
-		)
-
-		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send("Success")
-
-	} catch (error) {
-		console.log(`Error while getting getAllUsers ${error}`)
-		return res
-			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
-	}
-}
-
-/**
- * Update user password.
- * @param  {Object} req request object
- * @param  {Object} res response object
- */
-exports.updatePassword = async (req, res) => {
-	try {
-
-		if (!req.body.password) {
-			return res.status(constants.STATUS_CODE.UNAUTHORIZED_ERROR_STATUS)
-			.send("Invalid details")
-		}
-
-		let cutoff = Date.now() - 2
-		let data = await UpdatePassword.find({
-			userId: req.body.userId,
-			isActive: {
-				$gt: {
-					cutoff	
-				}
-			},
-			isActive: true
-		})
-
-
-		if (data.length === 0 ) {
-			return res.status(constants.STATUS_CODE.UNAUTHORIZED_ERROR_STATUS)
-			.send("Invalid details")
-		}
-
-		await Users.findByIdAndUpdate(
-			req.body.userId,
-			{
-				password: UpdateHashPassword(req.body.password)
-			}
-		)
-		console.log(req.body.password)
-
-		await UpdatePassword.updateMany(
-			{
-				userId: req.body.userId
-			},
-			{
-				isActive: false
-			}
-		)
-
-		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send("Success")
-
-	} catch (error) {
-		console.log(`Error while getting getAllUsers ${error}`)
-		return res
-			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
-	}
-}
-
-/**
- * Check if user is authorized to update password.
- * @param  {Object} req request object
- * @param  {Object} res response object
- */
-exports.isUpdatePasswordActive = async (req, res) => {
-	try {
-
-		let cutoff = Date.now() - 2
-		let data = await UpdatePassword.find({
-			userId: req.body.userId,
-			isActive: {
-				$gt: {
-					cutoff	
-				}
-			},
-			isActive: true
-		})
-
-
-		if (data.length === 0 ) {
-			return res.status(constants.STATUS_CODE.UNAUTHORIZED_ERROR_STATUS)
-			.send("Invalid details")
-		}
-
-		data = await Users.findById(req.body.userId)
-		delete data.password
-
-		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send(data)
-
-	} catch (error) {
-		console.log(`Error while getting getAllUsers ${error}`)
-		return res
-			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
 	}
 }
 
@@ -488,7 +274,7 @@ exports.isUpdatePasswordActive = async (req, res) => {
  */
 exports.allUsers = async (req, res) => {
 	try {
-		
+
 		let data = await Users.find()
 		let returnValue = []
 
@@ -500,13 +286,253 @@ exports.allUsers = async (req, res) => {
 		}
 
 		return res
-		.status(constants.STATUS_CODE.SUCCESS_STATUS)
-		.send(returnValue)
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send(returnValue)
 
 	} catch (error) {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send(error.message)
+			.send({ msg: error.message })
+	}
+}
+
+
+/**
+ * Get all users.
+ * @param  {Object} req request object
+ * @param  {Object} res response object
+ */
+exports.userStatus = async (req, res) => {
+	try {
+
+		let reqUserObj = await Users.findOne({
+			userUID: req.body.userUID
+		})
+		if (!reqUserObj) {
+			return res
+				.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
+				.send({ msg: "User not found in database" })
+		}
+		if (!reqUserObj.isActive) {
+			return res
+				.status(constants.STATUS_CODE.SUCCESS_STATUS)
+				.send({
+					status: "INACTIVE",
+					gameId: null
+				})
+		}
+
+		req.body.userId = reqUserObj._id
+		let timestamp = Date.now() - 1000 * 90
+
+		let endedGame = await Game.findOne({
+			$or: [{ players: req.body.userId }, { waiting: req.body.userId }, { spectators: req.body.userId }],
+			isEnded: true,
+			lastPlayedTime: {
+				$gte: timestamp
+			}
+		})
+
+		if (endedGame) {
+			return res
+				.status(constants.STATUS_CODE.SUCCESS_STATUS)
+				.send({
+					status: "GAME_ROOM",
+					gameId: endedGame.gameId
+				})
+		}
+		let inProgressGame = await Game.findOne({
+			$or: [{ players: req.body.userId }, { waiting: req.body.userId }, { spectators: req.body.userId }],
+			isEnded: false
+		})
+
+		if (!inProgressGame) {
+			return res
+				.status(constants.STATUS_CODE.SUCCESS_STATUS)
+				.send({
+					status: "NOT_PLAYING",
+					gameId: null
+				})
+		} else if (inProgressGame.isStarted) {
+			return res
+				.status(constants.STATUS_CODE.SUCCESS_STATUS)
+				.send({
+					status: "GAME_ROOM",
+					gameId: inProgressGame.gameId
+				})
+		}
+
+		return res
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send({
+				status: "LOBBY",
+				gameId: inProgressGame.gameId
+			})
+
+	} catch (error) {
+		console.log(`Error while getting getAllUsers ${error}`)
+		return res
+			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
+			.send({ msg: error.message })
+	}
+}
+
+
+/**
+ * Get all users.
+ * @param  {Object} req request object
+ * @param  {Object} res response object
+ */
+exports.userNames = async (req, res) => {
+	try {
+
+		let allUsers = await Users.find({
+			isActive: true
+		})
+
+		let listOfUserNames = []
+		for (var obj of allUsers) {
+			listOfUserNames.push(obj.userName)
+		}
+
+		return res
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send(listOfUserNames.sort())
+
+	} catch (error) {
+		console.log(`Error while getting getAllUsers ${error}`)
+		return res
+			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
+			.send({ msg: error.message })
+	}
+}
+
+
+/**
+ * Get all users.
+ * @param  {Object} req request object
+ * @param  {Object} res response object
+ */
+exports.reportUser = async (req, res) => {
+	try {
+
+		if (req.params.userId == "null") {
+			return res.status(204).json()
+		}
+
+		let userObj1 = await Users.findById(req.params.userId)
+
+		if (!userObj1) {
+			return res
+				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
+				.send({ msg: "Invalid user ID" })
+		}
+
+		transporter.sendMail({
+			from: config.nodemailer.EMAIL_ID,
+			to: config.adminEmail,
+			subject: "User reported in declare game",
+			// text: "Hello world?", 
+			html: `<p><b>By email address: </b>${req.body.email}</p><p><b>Reported user: </b>${userObj1.userName}</p>`
+		});
+
+		transporter.sendMail({
+			from: config.nodemailer.EMAIL_ID,
+			to: req.body.email,
+			subject: "You have reported an user on declare game",
+			html: `<p>Thank you for reporting ${userObj1.userName}. We are currently considering the request only if they have inappropriate username. Please send us a message from <b>'Accounts'</b> tab if you have reported the user for any other reason.</p><p><b>Total games played by ${userObj1.userName}: </b>${userObj1.totalGames}</p>`
+		});
+
+		let messageObj = {
+			userUID: req.body.userUID,
+			email: req.body.email,
+			subject: `Reported User`,
+			body: `${req.params.userId} || ${userObj1.userName}`
+		}
+		let newMessage = new Messages(messageObj)
+		await newMessage.save()
+
+		return res
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send({ msg: "Request sent" })
+
+
+	} catch (error) {
+		console.log(`Error while getting getAllUsers ${error}`)
+		return res
+			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
+			.send({ msg: error.message })
+	}
+}
+
+
+/**
+ * Get all users.
+ * @param  {Object} req request object
+ * @param  {Object} res response object
+ */
+exports.claimOldUsername = async (req, res) => {
+	try {
+
+
+		const currentUserName = req.body.currentUserName
+		const oldUserName = req.body.oldUserName
+		const newUserName = req.body.newUserName
+
+		if (newUserName != currentUserName && newUserName != oldUserName) {
+			return res
+				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
+				.send({ msg: "New username has to either current or old username" })
+		}
+
+		if (currentUserName == oldUserName) {
+			return res
+				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
+				.send({ msg: "Old username cannot be same as current username" })
+		}
+		let userObj1 = await Users.findOne({ userName: currentUserName })
+		let userObj2 = await Users.findOne({ userName: oldUserName })
+
+		if (!userObj1 || !userObj2) {
+			return res
+				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
+				.send({ msg: "Username(s) do not exist" })
+		}
+
+		transporter.sendMail({
+			from: config.nodemailer.EMAIL_ID,
+			to: config.adminEmail,
+			subject: "Request to claim old username",
+			// text: "Hello world?", 
+			html: `<p><b>Email address: </b>${req.body.email}</p><p><b>Current username: </b>${currentUserName}</p><p><b>Old username: </b>${oldUserName}</p><p><b>New username: </b>${newUserName}</p>`
+		});
+
+		transporter.sendMail({
+			from: config.nodemailer.EMAIL_ID,
+			to: req.body.email,
+			subject: "Request to claim old username has been received",
+			// text: "Hello world?", 
+			html: `<p><b>Current username: </b>${currentUserName}</p><p><b>Old username: </b>${oldUserName}</p><p><b>Stats from both accounts will be merged with new username: </b>${newUserName}</p>`
+		});
+
+		let messageObj = {
+			userUID: req.body.userUID,
+			email: req.body.email,
+			subject: `Claim username`,
+			body: `Current username: ${currentUserName} || Old username: ${oldUserName} || New username: ${newUserName}`
+		}
+		let newMessage = new Messages(messageObj)
+		await newMessage.save()
+
+		return res
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send({ msg: "Request sent" })
+
+	} catch (error) {
+		console.log(`Error while getting getAllUsers ${error}`)
+		return res
+			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
+			.send({ msg: error.message })
 	}
 }
