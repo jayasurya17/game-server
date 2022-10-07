@@ -11,7 +11,7 @@ const GameMember = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         required: true
     },
-    gamerId: {
+    userName: {
         type: String,
         required: true
     },
