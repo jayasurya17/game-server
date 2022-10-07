@@ -7,4 +7,11 @@ const  socket = openSocket(import.meta.env.VITE_SOCKET, {
     }
 });
 
+socket.on('connect', async () => {
+    const authId = await getIdTokenOfUser();
+    if (authId) {
+        socket.emit('login', authId)
+    }
+})
+
 export default socket;

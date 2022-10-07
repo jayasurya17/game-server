@@ -354,6 +354,15 @@ var GameAdminListers = (socket) => {
 						}
 					}
 				)
+				await GameMember.updateOne(
+					{
+						gameId: body.gameId,
+						userId: body.userId
+					},
+					{
+						didPlayerLeave: true
+					}
+				)
 			}
 
 			let removePlayerUID, removePlayerSysId, removePlayerSocket
