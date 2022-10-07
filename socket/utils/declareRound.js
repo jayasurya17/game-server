@@ -11,7 +11,7 @@ const getCardValue = (cardNum) => {
     return values[cardValue]
   }
 
-var endGame = (gameId, declarePlayerUserName, wonTHeGameUserName, isAutoPlay) => {
+var endGame = (gameId, declarePlayerUserName, wonTheGameUserName, isAutoPlay) => {
     return new Promise(async (resolve) => {
         await Game.updateOne(
             {
@@ -20,14 +20,14 @@ var endGame = (gameId, declarePlayerUserName, wonTHeGameUserName, isAutoPlay) =>
             {
                 isEnded: true,
                 previousDroppedPlayer: declarePlayerUserName,
-                lastPlayedAction: `${wonTHeGameUserName} has won the game`
+                lastPlayedAction: `${wonTheGameUserName} has won the game`
             }
         )
 
         if (isAutoPlay == false) {
             await Users.updateOne(
                 {
-                    userName: userName
+                    userName: wonTheGameUserName
                 },
                 {
                     $inc: {
@@ -219,8 +219,10 @@ var declareRound = (gameId, userId, isAutoPlay) => {
         }
 
         // End the game if lesser than 2 players are active
+        let declarePlayerUser = await Users.findById(userId)
+        console.log(declarePlayerUser)
+        console.log(declarePlayerUser.userName)
         if (numberOfActivePlayers < 2) {
-            let declarePlayerUser = await Users.findById(userId)
             await endGame(gameId, declarePlayerUser.userName, activePlayerName, isAutoPlay)
         }
         if (isAutoPlay == false) {

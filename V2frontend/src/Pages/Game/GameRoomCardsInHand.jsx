@@ -111,20 +111,20 @@ function GameRoomCardsInHand({ commonData, selected, cardsInHand, selectCards })
             Declare
           </Button>
           <Center>
-          {
-            commonData.isGameComplete && !commonData.isAdmin ?
-              <><Loader variant="bars" /> <Space w="xs" /> <Text>Admin will start new game</Text></> :
-              commonData.isRoundComplete && !commonData.isAdmin ?
-                <><Loader variant="bars" /> <Space w="xs" /> <Text>Admin will start next round</Text></> :
-                commonData.isGameComplete && commonData.isAdmin ?
+            {
+              commonData.isGameComplete && !commonData.isAdmin ?
+                <><Loader variant="bars" /> <Space w="xs" /> <Text>Admin will start new game</Text></> :
+                commonData.isRoundComplete && !commonData.isAdmin ?
+                  <><Loader variant="bars" /> <Space w="xs" /> <Text>Admin will start next round</Text></> :
+                  commonData.isGameComplete && commonData.isAdmin ?
 
-                  <Button onClick={() => RestartGame(GameCode)}>Start new game</Button> :
-                  commonData.isRoundComplete && commonData.isAdmin ?
+                    <Button onClick={() => RestartGame(GameCode)}>Start new game</Button> :
+                    commonData.isRoundComplete && commonData.isAdmin ?
 
-                    <Button onClick={() => NextRound(GameCode)}>Start next round</Button> :
-                    <></>
-          }
-        </Center>
+                      <Button onClick={() => NextRound(GameCode)}>Start next round</Button> :
+                      <></>
+            }
+          </Center>
         </Group>
       </Stack>
 
@@ -136,18 +136,25 @@ function GameRoomCardsInHand({ commonData, selected, cardsInHand, selectCards })
     <Grid>
       {
         commonData.playerStatus === "PLAYING" ?
-          <>
-            <MediaQuery largerThan="md" styles={{ display: 'none' }}>
-              <Grid.Col span={12}>
-                {playerCardsInHandGrid}
-              </Grid.Col>
-            </MediaQuery>
-            <MediaQuery smallerThan="md" styles={{ display: 'none' }}>
-              <Grid.Col span={6} offset={3}>
-                {playerCardsInHandGrid}
-              </Grid.Col>
-            </MediaQuery>
-          </>
+          cardsInHand.length == 0 ?
+            <Grid.Col span={12} padding={'10px'}>
+              <Space h="xl" />
+              <Center>
+                <Loader variant="dots" /> <Space w="xl" /> <Text>You've been eliminated! Wait for next game to start</Text>
+              </Center>
+            </Grid.Col> :
+            <>
+              <MediaQuery largerThan="md" styles={{ display: 'none' }}>
+                <Grid.Col span={12}>
+                  {playerCardsInHandGrid}
+                </Grid.Col>
+              </MediaQuery>
+              <MediaQuery smallerThan="md" styles={{ display: 'none' }}>
+                <Grid.Col span={6} offset={3}>
+                  {playerCardsInHandGrid}
+                </Grid.Col>
+              </MediaQuery>
+            </>
           :
           commonData.playerStatus === "WAITING" ?
             <Grid.Col span={12} padding={'10px'}>

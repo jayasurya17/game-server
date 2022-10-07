@@ -125,9 +125,8 @@ var GameAdminListers = (socket) => {
 			})
 			var activePlayers = []
 			for (var player of allPlayers) {
-				if (player.isEliminated == false) {
-					activePlayers.push(player)
-				} else {
+				activePlayers.push(player)
+				if (player.isEliminated) {
 					await GameMember.findByIdAndUpdate(
 						player._id,
 						{
@@ -292,7 +291,7 @@ var GameAdminListers = (socket) => {
 					currentCards: cardsForPlayer
 				})
 				await gameMemberObj.save()
-				emitToUserId(userId, "cards-for-player", "SUCCESS", cardsForPlayer)
+				emitToUserId(userId, "cards-in-hand", "SUCCESS", cardsForPlayer)
 			}
 
 			let game = await Game.findOneAndUpdate(
