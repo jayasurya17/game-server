@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Grid, Image, createStyles, Card, Group, Modal, Text, Stack, Space, MediaQuery, Divider } from "@mantine/core";
+import { Button, Grid, Image, createStyles, Card, Group, Modal, Text, Stack, Space, MediaQuery, Divider, Badge } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { RemovePlayer } from '../../Providers/Socket/emitters';
 import { IconUser, IconRun } from '@tabler/icons';
@@ -119,9 +119,9 @@ export function PlayersCards({ data, isRoundComplete, isGameComplete, showUserSt
     return (
       <Grid key={item.userId} className={classes.item} style={{ backgroundColor: item.currentPlayer ? '#06283D' : '' }}>
         <Grid.Col span={2}>
-          <Text size="sm" color={item.isEliminated ? "#F66B0E" : "dimmed"} p={2}>
+          <Badge radius={'sm'} size='lg' color={item.isEliminated ? "#F66B0E" : "blue"}>
             {item.totalScore}
-          </Text>
+          </Badge>
         </Grid.Col>
         <Grid.Col span={6}>
           <Text onClick={() => showUserStats(item.userId)} size="sm">

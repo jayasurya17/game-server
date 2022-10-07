@@ -25,9 +25,9 @@ function CreateGameModal({ opened, setOpened, createGame }) {
       title="Game settings"
     >
       <Group position="apart" p={3}>
-        Max score
+        Elimination Score
         <SegmentedControl
-          color={'green'}
+          color={'orange'}
           data={[
             { label: 100, value: 100 },
             { label: 200, value: 200 },
@@ -40,9 +40,9 @@ function CreateGameModal({ opened, setOpened, createGame }) {
       </Group>
 
       <Group position="apart" p={3}>
-        Ending with a pair
+        Score for Ending with a pair
         <SegmentedControl
-          color={'green'}
+          color="green"
           data={[
             { label: -15, value: -15 },
             { label: -25, value: -25 },
@@ -55,7 +55,7 @@ function CreateGameModal({ opened, setOpened, createGame }) {
       </Group>
 
       <Group position="apart" p={4}>
-        Score for wrong call
+        Score for Bamboozled
         <SegmentedControl
           color={'red'}
           data={[
@@ -69,8 +69,9 @@ function CreateGameModal({ opened, setOpened, createGame }) {
         /></Group>
 
       <Group position="apart" p={4}>
-        Can declare first round
+        Can declare first round?
         <SegmentedControl
+          color={'blue'}
           data={[
             { label: "YES", value: "true" },
             { label: "NO", value: "false" }
@@ -84,6 +85,7 @@ function CreateGameModal({ opened, setOpened, createGame }) {
       <Group position="apart" p={4}>
         Autoplay timer
         <SegmentedControl
+          color={'yellow'}
           data={[
             { label: '45s', value: 45 },
             { label: '60s', value: 60 },
@@ -97,6 +99,8 @@ function CreateGameModal({ opened, setOpened, createGame }) {
       <Group position="apart" p={4}>
         Public game
         <SegmentedControl
+
+          color={'green'}
           data={[
             { label: "YES", value: "true" },
             { label: "NO", value: "false" }

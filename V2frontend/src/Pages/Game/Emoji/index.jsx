@@ -10,7 +10,7 @@ import { Reactions } from '../../../Providers/Socket/listeners';
 
 const falldown = keyframes({
   "0%": { marginTop: '0' },
-  "100%": { marginTop: '100vh' },
+  "100%": { marginTop: '80vh' },
 })
 
 const useStyles = createStyles((theme) => ({
@@ -54,7 +54,7 @@ function EmojiRain({ emoji }) {
     <div className={classes.SuperContainer}>
       {emojisToRender.map(({ key, emoji, offset }) => {
         return (
-          <div className={classes.EmojiContainer} style={{ left: `${offset - 5}vw` }} key={key} offset={offset}>
+          <div className={classes.EmojiContainer} style={{ left: `${offset == 0 ? '15' : offset - 15}vw` }} key={key} offset={offset}>
             {emoji}
           </div>);
       })}
