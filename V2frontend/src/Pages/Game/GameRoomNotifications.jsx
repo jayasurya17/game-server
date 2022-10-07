@@ -13,10 +13,15 @@ function GameRoomNotifications({ commonData }) {
   let userActionTitle = ""
   let userActionColor = ""
   if (commonData.playerDeclaredType == "LOWEST") {
-    userActionTitle = commonData.lastPlayedUser
+    if (commonData.isGameComplete) {
+      userActionTitle = commonData.lastPlayedAction
+      commonData.lastPlayedAction = ""
+    } else {
+      userActionTitle = commonData.lastPlayedUser
+    }
     userActionColor = "teal.1"
   } else if (commonData.playerDeclaredType == "PAIR") {
-    userActionTitle = `${commonData.lastPlayedUser}had WICKED WANGO cards"`
+    userActionTitle = `${commonData.lastPlayedUser} had WICKED WANGO cards`
     userActionColor = "lime.1"
   } else if (commonData.playerDeclaredType == "SAME") {
     userActionTitle = `GG! ${commonData.lastPlayedUser}`
