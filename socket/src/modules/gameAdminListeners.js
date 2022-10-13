@@ -217,23 +217,13 @@ var GameAdminListers = (socket) => {
 			}
 
 			let timestamp = Date.now()
-			await Game.findOneAndUpdate(
-				{
-					gameId: body.gameId
-				},
-				{
-					gameId: body.gameId.concat(timestamp.toString())
-				}
-			)
+			await Game.deleteOne({
+				gameId: body.gameId
+			})
 
-			await GameMember.updateMany(
-				{
-					gameId: body.gameId
-				},
-				{
-					gameId: body.gameId.concat(timestamp.toString())
-				}
-			)
+			await GameMember.deleteMany({
+				gameId: body.gameId
+			})
 
 			var availableCards = []
 			for (var index = 1; index < 53; index++) {
@@ -255,7 +245,13 @@ var GameAdminListers = (socket) => {
 				previousDroppedCards: [],
 				previousDroppedPlayer: " ",
 				lastPlayedTime: " ",
-				lastPlayedAction: " "
+				lastPlayedAction: " ",
+				maxScore: oldGame.maxScore,
+				endWithPair: oldGame.endWithPair,
+				wrongCall: oldGame.wrongCall,
+				canDeclareFirstRound: oldGame.canDeclareFirstRound,
+				autoplayTimer: oldGame.autoplayTimer,
+				isPublicGame: oldGame.isPublicGame
 			})
 			let newGame = await newGameData.save()
 
