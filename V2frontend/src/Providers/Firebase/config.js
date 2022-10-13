@@ -80,9 +80,7 @@ const getIdTokenOfUser = async () => {
   if (user) {
     return await user.getIdToken()
   }
-  else {
-    err("User not available")
-  }
+  return null;
 }
 
 
