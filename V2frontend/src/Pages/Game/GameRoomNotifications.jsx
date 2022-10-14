@@ -22,7 +22,6 @@ function GameRoomNotifications({ commonData }) {
       }).then(async (response) => {
         if (response.ok) {
           response.json().then(json => {
-            console.log(json)
             setGameSettings(json);
           })
         } else {

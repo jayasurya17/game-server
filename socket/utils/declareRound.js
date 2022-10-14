@@ -220,8 +220,6 @@ var declareRound = (gameId, userId, isAutoPlay) => {
 
         // End the game if lesser than 2 players are active
         let declarePlayerUser = await Users.findById(userId)
-        console.log(declarePlayerUser)
-        console.log(declarePlayerUser.userName)
         if (numberOfActivePlayers < 2) {
             await endGame(gameId, declarePlayerUser.userName, activePlayerName, isAutoPlay)
         }

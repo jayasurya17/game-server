@@ -43,7 +43,6 @@ const signInWithGoogle = () => {
         }).then(async (response) => {
           if (response.ok) {
             resolve(user);
-            console.log("OKAY")
           } else {
             throw await response.json()
           }

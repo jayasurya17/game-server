@@ -190,7 +190,6 @@ function GameRoom() {
       Navigate(`/`)
     } else if (status == "SUCCESS") {
       // data = sampleData
-      console.log(data)
       setCommonData(data)
       if (!data.currentPlayer || data.isRoundComplete || data.isGameComplete) {
         setSelected([])
