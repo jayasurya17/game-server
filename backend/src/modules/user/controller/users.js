@@ -26,8 +26,20 @@ let transporter = nodemailer.createTransport({
 exports.loginUser = async (req, res) => {
 	try {
 		var user
+		var username = req.body.userName
+		var number = 1
+		user = await Users.findOne({
+			userName: username
+		})
 
-		var isAuth = false
+		while (user) {
+			username = username + number.toString()
+			number += 1
+			user = await Users.findOne({
+				userName: username
+			})
+		}
+
 		user = await Users.findOne({
 			userUID: req.body.userUID
 		})
@@ -35,7 +47,7 @@ exports.loginUser = async (req, res) => {
 		if (!user) {
 			let userObj = {
 				userUID: req.body.userUID,
-				userName: req.body.userName,
+				userName: username,
 				email: req.body.email
 			}
 			let newUser = new Users(userObj)
