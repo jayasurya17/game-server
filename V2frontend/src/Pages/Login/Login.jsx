@@ -25,7 +25,7 @@ export default function GoogleLogin() {
     <Center style={{ width: '100%', height: '100vh' }}>
       <Paper radius="md" p="xl" withBorder >
         <Text size="lg" weight={500}>
-          Welcome to DeclareGames.in
+          Welcome to Declare Game
         </Text>
         <Group grow mb="md" mt="md">
           <GoogleButton onClick={signIn} radius="xl">Google</GoogleButton>

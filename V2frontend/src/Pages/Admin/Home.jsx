@@ -26,7 +26,7 @@ function Home() {
                 mr="xl"
               />
             </MediaQuery>
-            <Title order={4}>DeclareGame.in Admin</Title>
+            <Title order={4}>Declare Game Admin</Title>
           </div>
         </Header>
       }

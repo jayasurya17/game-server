@@ -39,7 +39,7 @@ function Home() {
             }
           })
         } else {
-          throw await response.json()
+          // throw await response.json()
         }
       }).catch((error) => {
         showNotification({
@@ -75,7 +75,7 @@ function Home() {
             />
           </MediaQuery>
 
-          <Title order={4}>DeclareGame.in</Title>
+          <Title order={4}>Declare Game</Title>
         </div>
       </Header>}
       styles={(theme) => ({
