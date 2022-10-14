@@ -52,7 +52,7 @@ function Demo({ userNames }) {
       newUserName,
     };
     const authId = await getIdTokenOfUser();
-    fetch(import.meta.env.VITE_API + "/users/claim", {
+    fetch(import.meta.env.VITE_API + "/admin/claim", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
