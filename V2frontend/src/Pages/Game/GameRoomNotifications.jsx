@@ -1,37 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Alert, Button, Grid, Text, Center, ActionIcon, Loader, Space, Title, Modal, Group, Menu } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { LeaveGame, NextRound, RestartGame, Reactions } from '../../Providers/Socket/emitters';
-import { IconPlayCard, IconLogout, IconMoodSmile } from '@tabler/icons';
+import { IconPlayCard, IconLogout, IconMoodSmile, IconSettings, IconClockHour4, IconBrandGoogleOne, IconWorld, IconSortAscending2, IconLayersLinked, IconX, IconCheck } from '@tabler/icons';
+import { getIdTokenOfUser, logout } from '../../Providers/Firebase/config';
 
 function GameRoomNotifications({ commonData }) {
   let params = useParams()
   let GameCode = params.gameId;
   const [leaveGameModalOpened, setLeaveGameModalOpened] = useState(false);
+  const [gameSettings, setGameSettings] = useState({});
   const emoji = ['🔥', '🤣', '😈', '😢', '🖕'];
 
+  const getGameSettings = useCallback(
+    async () => {
+      const authId = await getIdTokenOfUser();
+      fetch(import.meta.env.VITE_API + "/game/settings/" + GameCode, {
+        headers: {
+          Authorization: `Bearer ${authId}`,
+        },
+      }).then(async (response) => {
+        if (response.ok) {
+          response.json().then(json => {
+            console.log(json)
+            setGameSettings(json);
+          })
+        } else {
+          throw await response.json()
+        }
+      }).catch((error) => {
+        showNotification({
+          variant: 'outline',
+          color: 'red',
+          title: 'Something went wrong!',
+          message: error.msg
+        })
+      })
+    },
+    [],
+  );
+
+
+
+  useEffect(() => {
+    getGameSettings()
+  }, [])
+
   let userActionTitle = ""
+  let userActionDescription = ""
   let userActionColor = ""
   if (commonData.playerDeclaredType == "LOWEST") {
     if (commonData.isGameComplete) {
       userActionTitle = commonData.lastPlayedAction
-      commonData.lastPlayedAction = ""
+      userActionDescription = ""
     } else {
       userActionTitle = commonData.lastPlayedUser
+      userActionDescription = commonData.lastPlayedAction
     }
     userActionColor = "teal.1"
   } else if (commonData.playerDeclaredType == "PAIR") {
     userActionTitle = `${commonData.lastPlayedUser} had WICKED WANGO cards`
+    userActionDescription = commonData.lastPlayedAction
     userActionColor = "lime.1"
   } else if (commonData.playerDeclaredType == "SAME") {
     userActionTitle = `GG! ${commonData.lastPlayedUser}`
+    userActionDescription = commonData.lastPlayedAction
     userActionColor = "yellow.1"
   } else if (commonData.playerDeclaredType == "NOT_LOWEST") {
     userActionTitle = `${commonData.lastPlayedUser} just got BAMBOOZELED`
+    userActionDescription = commonData.lastPlayedAction
     userActionColor = "red.1"
   } else {
     userActionTitle = commonData.lastPlayedUser
+    userActionDescription = commonData.lastPlayedAction
     userActionColor = "blue.1"
+  }
+  if (commonData.isGameComplete) {
+    userActionColor = "orange.0"
   }
 
   return (
@@ -47,10 +92,26 @@ function GameRoomNotifications({ commonData }) {
 
           </Menu.Dropdown>
         </Menu>
+
+        <Menu>
+          <Menu.Target>
+            <ActionIcon style={{ padding: '4px' }} color={'gray.7'} variant='filled' size={'lg'}>
+              <IconSettings size={34}></IconSettings></ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label><IconSortAscending2 size={10} /> Max score: {gameSettings.maxScore}</Menu.Label>
+            <Menu.Label><IconLayersLinked size={10} /> End with pair: {gameSettings.endWithPair}</Menu.Label>
+            <Menu.Label><IconX size={10} /> Wrong call: {gameSettings.wrongCall}</Menu.Label>
+            <Menu.Label><IconClockHour4 size={10} /> Autoplay timer: {gameSettings.autoplayTimer}</Menu.Label>
+            <Menu.Label><IconWorld size={10} /> Public game: {gameSettings.isPublicGame ? "Yes" : "No"}</Menu.Label>
+            <Menu.Label><IconBrandGoogleOne size={10} /> First round declare: {gameSettings.canDeclareFirstRound ? <IconCheck size={10} /> : <IconX size={10} />}</Menu.Label>
+          </Menu.Dropdown>
+        </Menu>
+
       </Grid.Col>
       <Grid.Col span={10}>
         <Alert color={userActionColor} icon={<IconPlayCard size={'2rem'} />} title={userActionTitle} radius="md">
-          {commonData.lastPlayedAction}
+          {userActionDescription}
         </Alert>
       </Grid.Col>
       <Grid.Col span={1}>

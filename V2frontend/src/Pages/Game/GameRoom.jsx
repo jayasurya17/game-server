@@ -20,7 +20,7 @@ const sampleData =
   "discardPile": [1, 14, 27],
   "isRoundComplete": true,
   "playerDeclaredType": "",
-  "isGameComplete": false,
+  "isGameComplete": true,
   "waitingPlayers": [],
   "players": [
     {
@@ -86,7 +86,7 @@ const sampleData =
   ],
   "canPlayersDeclare": true,
   "playerStatus": "PLAYING",
-  "isAdmin": false,
+  "isAdmin": true,
   "currentPlayer": true
 }
 
@@ -190,8 +190,9 @@ function GameRoom() {
       Navigate(`/`)
     } else if (status == "SUCCESS") {
       // data = sampleData
+      console.log(data)
       setCommonData(data)
-      if (!data.currentPlayer) {
+      if (!data.currentPlayer || data.isRoundComplete || data.isGameComplete) {
         setSelected([])
       }
     }

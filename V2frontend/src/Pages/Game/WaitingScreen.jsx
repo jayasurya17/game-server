@@ -128,9 +128,9 @@ function DisplayData() {
               <Menu.Label><IconSortAscending2 size={14} /> Max score: {data.maxScore}</Menu.Label>
               <Menu.Label><IconLayersLinked size={14} /> End with pair: {data.endWithPair}</Menu.Label>
               <Menu.Label><IconX size={14} /> Wrong call: {data.wrongCall}</Menu.Label>
-              <Menu.Label><IconBrandGoogleOne size={14} /> First round declare: {data.canDeclareFirstRound ? "TRUE" : "FALSE"}</Menu.Label>
+              <Menu.Label><IconBrandGoogleOne size={14} /> First round declare: {data.canDeclareFirstRound ? <IconCheck size={10} /> : <IconX size={10} />}</Menu.Label>
               <Menu.Label><IconClockHour4 size={14} /> Autoplay timer: {data.autoplayTimer}</Menu.Label>
-              <Menu.Label><IconWorld size={14} /> Public game: {data.isPublicGame ? "TRUE" : "FALSE"}</Menu.Label>
+              <Menu.Label><IconWorld size={14} /> Public game: {data.isPublicGame ? "Yes" : "No"}</Menu.Label>
             </Menu.Dropdown>
           </Menu>
           <Title order={1}>

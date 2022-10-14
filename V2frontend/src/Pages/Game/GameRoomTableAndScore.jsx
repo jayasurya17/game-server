@@ -117,9 +117,9 @@ export function PlayersCards({ data, isRoundComplete, isGameComplete, showUserSt
   const items = data.map((item) => {
     let cards = [...Array(item.cardsInHand)].map((e, i) => { return <Image key={i} width={'8px'} src='/Cards/1B.svg' /> });
     return (
-      <Grid key={item.userId} className={classes.item} style={{ backgroundColor: item.currentPlayer ? '#06283D' : '' }}>
+      <Grid key={item.userId} className={classes.item} style={{ backgroundColor: item.currentPlayer && !isRoundComplete && !isGameComplete ? '#06283D' : '' }}>
         <Grid.Col span={2}>
-          <Badge radius={'sm'} size='lg' color={item.isEliminated ? "#F66B0E" : "blue"}>
+          <Badge radius={'sm'} size='md' color={item.isEliminated ? "#F66B0E" : "blue"}>
             {item.totalScore}
           </Badge>
         </Grid.Col>

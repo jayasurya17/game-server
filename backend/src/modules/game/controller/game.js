@@ -438,3 +438,38 @@ exports.getPublicGames = async (req, res) => {
 			.send({ msg: error.message })
 	}
 }
+
+/**
+ * Spectate a game.
+ * @param  {Object} req request object
+ * @param  {Object} res response object
+ */
+exports.getGameSettings = async (req, res) => {
+	try {
+		let gameObj = await Game.findOne({
+			gameId: req.params.gameId,
+		})
+		if (!gameObj) {
+			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
+				.send({ msg: `Invalid game id` })
+		}
+
+		let returnObj = {
+			maxScore: gameObj.maxScore,
+			endWithPair: gameObj.endWithPair,
+			wrongCall: gameObj.wrongCall,
+			canDeclareFirstRound: gameObj.canDeclareFirstRound,
+			autoplayTimer: gameObj.autoplayTimer,
+			isPublicGame: gameObj.isPublicGame
+		}
+
+		return res
+			.status(constants.STATUS_CODE.SUCCESS_STATUS)
+			.send(returnObj)
+	} catch (error) {
+		console.log(`Error in game/spectateGame ${error}`)
+		return res
+			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
+			.send({ msg: error.message })
+	}
+}

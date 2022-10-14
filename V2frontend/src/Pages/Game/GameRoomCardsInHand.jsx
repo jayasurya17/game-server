@@ -54,7 +54,7 @@ function GameRoomCardsInHand({ commonData, selected, cardsInHand, selectCards })
   let playerCardsInHandGrid = (
     <Box
       sx={(theme) => ({
-        backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],
+        backgroundColor: commonData.currentPlayer && !commonData.isRoundComplete && !commonData.isGameComplete ? theme.colors.dark[5] : theme.colors.dark[7],
         textAlign: 'center',
         padding: theme.spacing.xl,
         borderRadius: theme.radius.md,
@@ -118,7 +118,7 @@ function GameRoomCardsInHand({ commonData, selected, cardsInHand, selectCards })
                   <><Loader variant="bars" /> <Space w="xs" /> <Text>Admin will start next round</Text></> :
                   commonData.isGameComplete && commonData.isAdmin ?
 
-                    <Button onClick={() => RestartGame(GameCode)}>Start new game</Button> :
+                    <Button color={'orange.6'} onClick={() => RestartGame(GameCode)}>Start new game</Button> :
                     commonData.isRoundComplete && commonData.isAdmin ?
 
                       <Button onClick={() => NextRound(GameCode)}>Start next round</Button> :

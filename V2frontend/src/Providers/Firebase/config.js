@@ -27,45 +27,50 @@ const googleProvider = new GoogleAuthProvider();
 
 const auth = getAuth(app);
 
-const signInWithGoogle = async () => {
-  try {
-    const res = await signInWithPopup(auth, googleProvider);
-    const user = res.user;
-    await user.getIdToken().then(function (idToken) {  // <------ Check this line
+const signInWithGoogle = () => {
+  return new Promise(async (resolve) => {
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      const user = res.user;
+      await user.getIdToken().then(function (idToken) {  // <------ Check this line
 
-      // refeshToken();
-      fetch(`${import.meta.env.VITE_API}/users/login`, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        method: 'POST',
-      }).then(async (response) => {
-        if (response.ok) {
-          return user;
-        } else {
-          throw await response.json()
-        }
-      }).catch((error) => {
-        signOut(auth);
-        showNotification({
-          variant: 'outline',
-          color: 'red',
-          title: 'Something went wrong!',
-          message: error.msg
+        // refeshToken();
+        fetch(`${import.meta.env.VITE_API}/users/login`, {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+          method: 'POST',
+        }).then(async (response) => {
+          if (response.ok) {
+            resolve(user);
+            console.log("OKAY")
+          } else {
+            throw await response.json()
+          }
+        }).catch((error) => {
+          signOut(auth);
+          showNotification({
+            variant: 'outline',
+            color: 'red',
+            title: 'Something went wrongasdad!',
+            message: error.msg
+          })
+          resolve(null);
         })
+      });
+
+    } catch (err) {
+      signOut(auth);
+      showNotification({
+        variant: 'outline',
+        color: 'red',
+        title: 'Something went wrong12321!',
+        message: error.msg
       })
-    });
-    
-  } catch (err) {
-    signOut(auth);
-    showNotification({
-      variant: 'outline',
-      color: 'red',
-      title: 'Something went wrong!',
-      message: error.msg
-    })
-  }
-  return null;
+      resolve(null);
+    }
+  })
+
 };
 
 const logout = () => {

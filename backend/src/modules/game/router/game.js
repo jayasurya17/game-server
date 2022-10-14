@@ -10,5 +10,6 @@ router.post('/join', gameController.joinGame);
 router.post('/spectate', gameController.spectateGame);
 router.post('/quitFromLobby', gameController.quitFromLobby);
 router.get('/public', gameController.getPublicGames);
+router.get('/settings/:gameId', gameController.getGameSettings);
 
 module.exports = router;

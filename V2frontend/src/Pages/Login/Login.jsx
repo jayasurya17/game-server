@@ -16,7 +16,7 @@ export default function GoogleLogin() {
   const signIn = async () => {
     let user = await signInWithGoogle()
     if (user != null) {
-      navigate(-1);
+      navigate(-2);
     }
   };
 
