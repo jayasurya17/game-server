@@ -62,7 +62,7 @@ exports.loginUser = async (req, res) => {
 		console.log(`Error while logging in user ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -88,7 +88,7 @@ exports.getUserProfile = async (req, res) => {
 		console.log(`Error while getting user profile details ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -146,7 +146,7 @@ exports.updateUserProfile = async (req, res) => {
 		console.log(`Error while updating user profile details ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -164,7 +164,7 @@ exports.sendMessage = async (req, res) => {
 		if (!user) {
 			return res
 				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send({ msg: "Not a valid user" })
+				.send({ msg: "Please re-login to send a message" })
 		}
 
 		transporter.sendMail({
@@ -190,7 +190,7 @@ exports.sendMessage = async (req, res) => {
 		console.log(`Error while reporting bug ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -210,7 +210,7 @@ exports.getStats = async (req, res) => {
 		if (!user) {
 			return res
 				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send({ msg: "User does not exist" })
+				.send({ msg: "Please re-login to see stats" })
 		}
 
 		const returnValue = {
@@ -230,7 +230,7 @@ exports.getStats = async (req, res) => {
 		console.log(`Error while getting stats ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -274,7 +274,7 @@ exports.leaderboard = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -305,7 +305,7 @@ exports.allUsers = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -324,7 +324,7 @@ exports.userStatus = async (req, res) => {
 		if (!reqUserObj) {
 			return res
 				.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send({ msg: "User not found in database" })
+				.send({ msg: "User not found" })
 		}
 		if (!reqUserObj.isActive) {
 			return res
@@ -386,7 +386,7 @@ exports.userStatus = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -416,7 +416,7 @@ exports.userNames = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -438,7 +438,7 @@ exports.reportUser = async (req, res) => {
 		if (!userObj1) {
 			return res
 				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send({ msg: "Invalid user ID" })
+				.send({ msg: "Please send us a message instead if this persists" })
 		}
 
 		transporter.sendMail({
@@ -474,7 +474,7 @@ exports.reportUser = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -509,7 +509,7 @@ exports.claimOldUsername = async (req, res) => {
 		if (!userObj1 || !userObj2) {
 			return res
 				.status(constants.STATUS_CODE.BAD_REQUEST_ERROR_STATUS)
-				.send({ msg: "Username(s) do not exist" })
+				.send({ msg: "Please send us a message instead if this persists" })
 		}
 
 		transporter.sendMail({
@@ -525,7 +525,8 @@ exports.claimOldUsername = async (req, res) => {
 			to: req.body.email,
 			subject: "Request to claim old username has been received",
 			// text: "Hello world?", 
-			html: `<p><b>Current username: </b>${currentUserName}</p><p><b>Old username: </b>${oldUserName}</p><p><b>Stats from both accounts will be merged with new username: </b>${newUserName}</p>`
+			html: `<p><b>Current username: </b>${currentUserName}</p><p><b>Old username: </b>${oldUserName}</p><p><b>Stats from both accounts will be merged with new username: </b>${newUserName}</p>
+					<br><br><p style="color:gray;font-size:10px;">This is an automated email, please do not reply to this message. Please send us a message from <b>'Accounts'</b> tab if you wish to contact us.</p>`
 		});
 
 		let messageObj = {
@@ -545,6 +546,6 @@ exports.claimOldUsername = async (req, res) => {
 		console.log(`Error while getting getAllUsers ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message instead if this persists" })
 	}
 }

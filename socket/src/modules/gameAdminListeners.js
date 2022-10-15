@@ -185,7 +185,7 @@ var GameAdminListers = (socket) => {
 				return await emitDataToAllInGame(body.gameId)
 			}
 
-			return socket.emit('common-game-data', "ERROR", "Error in starting next round")
+			return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 
 		} catch (error) {
 			if (error.message) {
@@ -213,7 +213,7 @@ var GameAdminListers = (socket) => {
 			} else if (oldGame.players.length + oldGame.waiting.length < 2) {
 				return socket.emit('common-game-data', "ERROR", "Not enough players to restart the game")
 			} else if (oldGame.createdUser.toString() != reqUserId) {
-				return socket.emit('common-game-data', "ERROR", "Non game admin cannot restart the game")
+				return socket.emit('common-game-data', "ERROR", "Only game admin can restart the game")
 			}
 
 			let timestamp = Date.now()
@@ -307,7 +307,7 @@ var GameAdminListers = (socket) => {
 				return await emitDataToAllInGame(body.gameId)
 			}
 
-			return socket.emit('common-game-data', "ERROR", "Error in restarting the game")
+			return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 
 
 		} catch (error) {

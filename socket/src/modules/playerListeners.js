@@ -17,11 +17,11 @@ var PlayerListeners = (socket) => {
 
 		try {
 			if (!body.selected) {
-				return socket.emit('common-game-data', "ERROR", "Selected cards required to drop cards")
+				return socket.emit('common-game-data', "ERROR", "Please select cards that you wish to drop")
 			} else if (!body.gameId) {
-				return socket.emit('common-game-data', "ERROR", "Game Id required to drop cards")
+				return socket.emit('common-game-data', "ERROR", "Please Leave game and send us a message if this persists")
 			} else if (!body.type) {
-				return socket.emit('common-game-data', "ERROR", "Type required to drop cards")
+				return socket.emit('common-game-data', "ERROR", "Please Leave game and send us a message if this persists")
 			}
 
 			let gameMember = await GameMember.findOne({
@@ -34,7 +34,7 @@ var PlayerListeners = (socket) => {
 			})
 
 			if (!game || !gameMember) {
-				return socket.emit('common-game-data', "ERROR", "Cannot drop cards with invalid game id")
+				return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 			}
 
 			var newCardsInHand = []
@@ -62,11 +62,11 @@ var PlayerListeners = (socket) => {
 					if (cardValue == -1) {
 						cardValue = parseInt(temp) % 13
 					} else if (parseInt(temp) % 13 != cardValue) {
-						return socket.emit('common-game-data', "ERROR", "User cannot drop cards of different values")
+						return socket.emit('common-game-data', "ERROR", "You cannot drop cards of different values")
 					}
 					selected.push(parseInt(temp))
 				} else {
-					return socket.emit('common-game-data', "ERROR", "User cannot drop cards that they do not have")
+					return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 				}
 			}
 
@@ -77,7 +77,7 @@ var PlayerListeners = (socket) => {
 			} else if (body.type === "Start") {
 				newCardsInHand = await PlayCard.firstTurn(game, gameMember, selected, timestamp, nextPlayer)
 			} else {
-				return socket.emit('common-game-data', "ERROR", "Invalid type while dropping cards")
+				return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 			}
 
 			gameMember = await GameMember.findOne({
@@ -126,7 +126,7 @@ var PlayerListeners = (socket) => {
 				gameId: body.gameId
 			})
 			if (!game) {
-				return socket.emit('common-game-data', "ERROR", "Invalid game id")
+				return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 			}
 
 			if (reqUserId === game.createdUser.toString() && game.players.length === 1) {
@@ -196,7 +196,7 @@ var PlayerListeners = (socket) => {
 		try {
 			var game = await Game.findOne({ gameId: body.gameId })
 			if (!game) {
-				return socket.emit('reactions', "ERROR", "Reacting to invalid game id")
+				return socket.emit('reactions', "ERROR", "You are reacting to a game that does not exist")
 			} else if (game.isStarted) {
 				let playersInGame = game.players
 				playersInGame = playersInGame.concat(game.waiting)
@@ -206,7 +206,7 @@ var PlayerListeners = (socket) => {
 					emitToUserId(id, 'reactions', 'SUCCESS', body)
 				}
 			} else {
-				return socket.emit('reactions', "ERROR", "Game has not yet started")
+				return socket.emit('reactions', "ERROR", "Please wait for the game to start")
 			}
 		} catch (err) {
 			if (err.message) {
@@ -224,7 +224,7 @@ var PlayerListeners = (socket) => {
 		try {
 			var game = await Game.findOne({ gameId: body.gameId })
 			if (!game) {
-				return socket.emit('common-game-data', "ERROR", "Requested game updates for invalid game id")
+				return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 			}
 
 			let gameMember = await GameMember.findOne({
@@ -253,7 +253,7 @@ var PlayerListeners = (socket) => {
 		try {
 			var game = await Game.findOne({ gameId: body.gameId })
 			if (!game) {
-				return socket.emit('common-game-data', "ERROR", "Requested game updates for invalid game id")
+				return socket.emit('common-game-data', "ERROR", "Please refresh. Leave game and send us a message if this persists")
 			}
 
 			let gameMember = await GameMember.findOne({

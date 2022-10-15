@@ -32,7 +32,7 @@ exports.createGame = async (req, res) => {
 		})
 		if (game.length > 0) {
 			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send({ msg: "User is already part of a game. Please refresh page" })
+				.send({ msg: "You are already part of a game. Please refresh page" })
 		}
 
 		game = await Game.find({
@@ -98,7 +98,7 @@ exports.createGame = async (req, res) => {
 		console.log(`Error while creating game ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -127,7 +127,7 @@ exports.joinGame = async (req, res) => {
 		})
 		if (game) {
 			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send({ msg: `User is already part of a game ${game.gameId}.` })
+				.send({ msg: `You are already part of a game ${game.gameId}.` })
 		}
 
 
@@ -140,7 +140,7 @@ exports.joinGame = async (req, res) => {
 				.send({ msg: "Game code does not exist" })
 		} else if (game.players.includes(req.body.userId)) {
 			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send({ msg: "User has already joined game. Please refresh." })
+				.send({ msg: "You have already a joined game. Please refresh." })
 		} else if (game.players.length + game.waiting.length === 5) {
 			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
 				.send({ msg: "Game is full" })
@@ -246,7 +246,7 @@ exports.joinGame = async (req, res) => {
 		console.log(`Error while joining game ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -332,7 +332,7 @@ exports.quitFromLobby = async (req, res) => {
 		console.log(`Error in game/quitFromLobby ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -360,7 +360,7 @@ exports.spectateGame = async (req, res) => {
 		})
 		if (game) {
 			return res.status(constants.STATUS_CODE.CONFLICT_ERROR_STATUS)
-				.send({ msg: `User is already part of a game ${game.gameId}.` })
+				.send({ msg: `You are already part of a game ${game.gameId}.` })
 		}
 
 		game = await Game.findOne({
@@ -397,7 +397,7 @@ exports.spectateGame = async (req, res) => {
 		console.log(`Error in game/spectateGame ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -435,7 +435,7 @@ exports.getPublicGames = async (req, res) => {
 		console.log(`Error in game/spectateGame ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }
 
@@ -470,6 +470,6 @@ exports.getGameSettings = async (req, res) => {
 		console.log(`Error in game/spectateGame ${error}`)
 		return res
 			.status(constants.STATUS_CODE.INTERNAL_SERVER_ERROR_STATUS)
-			.send({ msg: error.message })
+			.send({ msg: "Please send us a message from accounts tab if this persists" })
 	}
 }

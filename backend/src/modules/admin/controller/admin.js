@@ -90,7 +90,7 @@ exports.claimOldUsername = async (req, res) => {
 				.send({ msg: "Not an admin" })
 		}
 
-		const currentUserName = req.body.newUserName
+		const currentUserName = req.body.currentUserName
 		const oldUserName = req.body.oldUserName
 		const newUserName = req.body.newUserName
 
@@ -118,7 +118,7 @@ exports.claimOldUsername = async (req, res) => {
 			}
 
 			let randomUserName = Math.random().toString(36).substring(2,)
-			randomUserName = oldGamerId + "___" + randomUserName
+			randomUserName = oldUserName + "___" + randomUserName
 			randomUserName = randomUserName.substring(0, 50)
 
 			await Users.findOneAndUpdate(
@@ -152,7 +152,7 @@ exports.claimOldUsername = async (req, res) => {
 				to: currentUserNameObj.email,
 				subject: "Request to claim username in declare game complete",
 				// text: "Hello world?", 
-				html: `<p><b>Your stats from ${currentUserName} and ${oldUserName} has been merged into single account with username: </b>${newUserName}</p>
+				html: `<p>Your stats from <b>${currentUserName}</b> and <b>${oldUserName}</b> has been merged into single account with username: <b>${newUserName}</b></p>
 						<p><b>Your stats</b></p>
 						<table>
 							<tr>
@@ -186,6 +186,7 @@ exports.claimOldUsername = async (req, res) => {
 								<td>${currentUserNameObj.totalPairs + oldUserNameObj.totalPairs}</td>
 							</tr>
 							</table>
+							<br><br><p style="color:gray;font-size:10px;">This is an automated email, please do not reply to this message. Please send us a message from <b>'Accounts'</b> tab if you wish to contact us.</p>
 							`
 			});
 
@@ -194,7 +195,7 @@ exports.claimOldUsername = async (req, res) => {
 				to: config.adminEmail,
 				subject: "Request to claim username in declare game complete",
 				// text: "Hello world?", 
-				html: `<p><b>User stats from ${currentUserName} and ${oldUserName} has been merged into single account with username: </b>${newUserName}</p>
+				html: `<p>User stats from <b>${currentUserName}</b> and <b>${oldUserName}</b> has been merged into single account with username: <b>${newUserName}</b></p>
 						<p><b>User stats</b></p>
 						<table>
 							<tr>
