@@ -90,11 +90,6 @@ exports.emitDataToAllInGame = (gameId) => {
             let arrOfPlayers = []
             let hasCurrentPlayerDroppedCards
 
-            let maxScores = 0
-            for (var member of allGameMembers) {
-                maxScores = Math.max(maxScores, member.roundScores.length)
-            }
-
             for (var member of allGameMembers) {
                 memberUserId = member.userId.toString()
                 if (memberUserId in allPlayers) {
@@ -110,7 +105,7 @@ exports.emitDataToAllInGame = (gameId) => {
                 if (member.isEliminated) {
                     allPlayers[memberUserId]["isEliminated"] = true
                     allPlayers[memberUserId]["cardsInHand"] = 0
-                    allPlayers[memberUserId]["roundScore"] = member.roundScores.length == maxScores ? calculateScore(member.currentCards) : null
+                    allPlayers[memberUserId]["roundScore"] = member.roundScores.length == game.roundsComplete ? calculateScore(member.currentCards) : null
                 } else {
                     allPlayers[memberUserId]["isEliminated"] = false
                     if (game.isRoundComplete) {

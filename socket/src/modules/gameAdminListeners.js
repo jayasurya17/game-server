@@ -125,7 +125,6 @@ var GameAdminListers = (socket) => {
 			})
 			var activePlayers = []
 			for (var player of allPlayers) {
-				activePlayers.push(player)
 				if (player.isEliminated) {
 					await GameMember.findByIdAndUpdate(
 						player._id,
@@ -133,6 +132,8 @@ var GameAdminListers = (socket) => {
 							currentCards: []
 						}
 					)
+				} else {
+					activePlayers.push(player)
 				}
 			}
 			var nextPlayerToStart = activePlayers[game.roundsComplete % activePlayers.length]
